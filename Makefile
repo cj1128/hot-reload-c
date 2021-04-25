@@ -7,10 +7,11 @@ dist:
 	mkdir -p dist
 
 dist/main.out: src/main.c Makefile
-	clang -std=c99 $(FLAGS) dist/render.dylib -lSDL2 $< -o $@
+	clang -std=c99 $(FLAGS) -lSDL2 $< -o $@
 
 dist/render.dylib: src/render.c Makefile
 	clang -std=c99 $(FLAGS) -dynamiclib $< -o $@
 
 run: dist/main.out
 	./dist/main.out
+.PHONY: run

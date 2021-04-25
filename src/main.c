@@ -1,6 +1,7 @@
 #include <SDL2/SDL.h>
 #include <stdlib.h>
 #include "hot.h"
+#include <dlfcn.h>
 
 #define WIDTH 800
 #define HEIGHT 800
@@ -48,6 +49,40 @@ InitRenderer(SDL_Window *win, bool vsync)
   return renderer;
 }
 
+typedef struct {
+  void *handle;
+  render_func *render;
+  bool valid;
+} hot_code;
+
+void
+LoadCode(hot_code *code)
+{
+  code->valid = false;
+
+  code->handle = dlopen("dist/render.dylib", RTLD_NOW);
+
+  if(code->handle) {
+    code->render = (render_func *)dlsym(code->handle, "Render");
+
+    if(code->render) {
+      code->valid = true;
+    }
+  } else {
+    printf("dlopen error: %s\n", dlerror());
+  }
+}
+
+void
+UnloadCode(hot_code *code)
+{
+  if(code->valid) {
+    if(dlclose(code->handle) != 0) {
+      printf("unload error: %s\n", dlerror());
+    }
+  }
+}
+
 int
 main()
 {
@@ -77,7 +112,20 @@ main()
   video.width = WIDTH;
   video.height = HEIGHT;
 
+  hot_memory memory;
+  memory.size = MB(100);
+  memory.memory = malloc(memory.size);
+
+  if(memory.memory == NULL) {
+    printf("malloc failed\n");
+    exit(1);
+  }
+
+  hot_code code;
+
   while(!quit) {
+    LoadCode(&code);
+
     while(SDL_PollEvent(&e)) {
       if(e.type == SDL_KEYDOWN) {
         switch(e.key.keysym.sym) {
@@ -94,7 +142,9 @@ main()
 
     SDL_LockTexture(texture, NULL, &video.memory, &video.pitch);
 
-    Render(&video);
+    if(code.valid) {
+      code.render(&memory, &video);
+    }
 
     SDL_UnlockTexture(texture);
 
@@ -103,6 +153,8 @@ main()
     SDL_RenderPresent(renderer);
 
     SDL_Delay(16);
+
+    UnloadCode(&code);
   }
 
   return 0;
