@@ -1,17 +1,21 @@
-FLAGS := -Wall -Werror -Wconversion -Wno-unused-variable -Wno-missing-braces
+CFLAGS := -Wall -Werror -Wconversion -Wno-unused-variable -Wno-missing-braces
 
-build: dist dist/render.dylib dist/main.out
+build: dist dist/main.out dist/render.dylib
 .PHONY: build
 
 dist:
-	mkdir -p dist
+	mkdir dist
 
 dist/main.out: src/main.c Makefile
-	clang -std=c99 $(FLAGS) -lSDL2 $< -o $@
+	gcc -std=c99 $(CFLAGS) -ldl -lSDL2 $< -o $@
 
 dist/render.dylib: src/render.c Makefile
-	clang -std=c99 $(FLAGS) -dynamiclib $< -o $@
+	gcc -std=c99 $(CFLAGS) -shared $< -o $@
 
-run: dist/main.out
+run: build
 	./dist/main.out
 .PHONY: run
+
+clean:
+	rm -rf dist
+.PHONY: clean

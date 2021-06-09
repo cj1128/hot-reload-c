@@ -26,9 +26,9 @@ RENDER_FUNC(Render)
 
   for(int y = 0; y < video->height; y++) {
     for(int x = 0; x < video->width; x++) {
-      uint8_t r = (uint8_t)x + (uint8_t)y;
-      uint8_t g = (uint8_t)x + state->offset;
-      uint8_t b = (uint8_t)y;
+      uint8_t r = (uint8_t)(x + y);
+      uint8_t g = (uint8_t)(x + state->offset);
+      uint8_t b = (uint8_t)(y);
 
       pixels[y][x] = Pack(r, g, b);
     }

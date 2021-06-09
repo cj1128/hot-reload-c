@@ -1,7 +1,7 @@
 #include <SDL2/SDL.h>
 #include <stdlib.h>
 #include "hot.h"
-#include <dlfcn.h>
+//#include <dlfcn.h>
 
 #define WIDTH 800
 #define HEIGHT 800
